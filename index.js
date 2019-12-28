@@ -6,15 +6,15 @@
   } else {
     global.cx = factory(); // Globals
   }
-}(this, function() {
+})(this, function() {
   'use strict';
 
   var prefixes = {
     modifiers: '{name}--',
-    states: 'is-'
+    states: 'is-',
   };
 
-  var push  = Array.prototype.push;
+  var push = Array.prototype.push;
   var slice = Array.prototype.slice;
   var toString = Object.prototype.toString;
 
@@ -24,8 +24,11 @@
    * @param {*} object
    * @return {string}
    */
-  function toType(object) {
-    return toString.call(object).slice(8, -1).toLowerCase();
+  function toType(o) {
+    return toString
+      .call(o)
+      .slice(8, -1)
+      .toLowerCase();
   }
 
   /**
@@ -35,9 +38,9 @@
    * @return {string}
    */
   var is = {};
-  ['string', 'boolean', 'array', 'object'].forEach(function(type) {
-    is[type] = function(object) {
-      return toType(object) === type;
+  ['string', 'boolean', 'array', 'object'].forEach(function(t) {
+    is[t] = function(o) {
+      return toType(o) === t;
     };
   });
 
@@ -60,13 +63,17 @@
    * @return {string[]}
    */
   function exclude(array) {
-    return array
-      .filter(function(el) {
-        return is.string(el) && el.trim() !== '';
-      })
-      .map(function(className) {
-        return className.trim();
-      });
+    var i;
+    var n = [];
+
+    for (i = 0; i < array.length; i++) {
+      var el = array[i];
+      if (is.string(el) && el.trim() !== '') {
+        n.push(el.trim());
+      }
+    }
+
+    return n;
   }
 
   /**
@@ -97,7 +104,10 @@
    * @return {string}
    */
   function detectPrefix(prefixName, classes) {
-    return (prefixes[prefixName] || '').replace(/\{([\w-]*?)\}/g, function (match, p1) {
+    return (prefixes[prefixName] || '').replace(/\{([\w-]*?)\}/g, function(
+      _,
+      p1
+    ) {
       return classes[p1] || '';
     });
   }
@@ -112,14 +122,17 @@
    */
   function getClassNamesByProps(propNames, props, prefix) {
     prefix = prefix || '';
+    var i;
+    var n = [];
 
-    return propNames
-      .filter(function(name) {
-        return !!props[name];
-      })
-      .map(function(name) {
-        return prefix + (is.boolean(props[name]) ? name : props[name]);
-      });
+    for (i = 0; i < propNames.length; i++) {
+      var name = propNames[i];
+      if (props[name]) {
+        n.push(prefix + (is.boolean(props[name]) ? name : props[name]));
+      }
+    }
+
+    return n;
   }
 
   /**
@@ -127,32 +140,40 @@
    * @param {...Object|string} [props|className]
    * @return {string}
    */
-  function cx(classes/* , [...props|className] */) {
+  function cx(classes /* , [...props|className] */) {
     if (!classes) {
       return '';
     }
 
     var args = slice.call(arguments).slice(1);
     var classNames = [];
+    var names = Object.keys(classes);
+    var i;
 
-    Object.keys(classes).forEach(function(name) {
+    for (i = 0; i < names.length; i++) {
+      var name = names[i];
       switch (toType(classes[name])) {
         case 'string':
           push.apply(classNames, split(classes[name]));
           break;
         case 'array':
-          args.forEach(function (arg) {
+          args.forEach(function(arg) {
             if (is.object(arg)) {
-              var names = getClassNamesByProps(classes[name], arg, detectPrefix(name, classes));
+              var names = getClassNamesByProps(
+                classes[name],
+                arg,
+                detectPrefix(name, classes)
+              );
               push.apply(classNames, names);
             }
           });
           break;
         default:
       }
-    });
+    }
 
-    args.forEach(function (arg) {
+    for (i = 0; i < args.length; i++) {
+      var arg = args[i];
       switch (toType(arg)) {
         case 'string':
           push.apply(classNames, split(arg));
@@ -162,7 +183,7 @@
           break;
         default:
       }
-    });
+    }
 
     return toClassName(exclude(uniq(classNames)));
   }
@@ -170,4 +191,4 @@
   cx.prefixes = prefixes;
 
   return cx;
-}));
+});

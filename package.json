@@ -1,14 +1,16 @@
 {
-  "name": "bem-classnames",
-  "version": "1.0.6",
-  "description": "A simple utility to manage BEM class names on React",
+  "name": "@chancestrickland/bem-classnames",
+  "version": "0.1.0",
+  "description": "A simple utility to manage BEM class names in JavaScript",
   "main": "index.js",
-  "scripts": {
-    "test": "mocha test.js"
-  },
+  "author": "Chance Strickland <hi@chancedigital.io>",
+  "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "https://github.com/pocotan001/bem-classnames.git"
+    "url": "https://github.com/chancestrickland/bem-classnames.git"
+  },
+  "scripts": {
+    "test": "jest test.js"
   },
   "keywords": [
     "bem",
@@ -18,9 +20,11 @@
     "react",
     "utility"
   ],
-  "author": "pocotan001",
-  "license": "MIT",
   "devDependencies": {
-    "mocha": "^2.2.5"
+    "jest": "^24.9.0"
+  },
+  "prettier": {
+    "singleQuote": true,
+    "trailingComma": "es5"
   }
 }

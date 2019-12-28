@@ -1,66 +1,91 @@
-var assert = require('assert');
-var cx = require('./');
+const cx = require('./index');
 
-describe('cx', function() {
-
-  var classes = {
+describe('cx', () => {
+  let classes = {
     name: 'button',
     modifiers: ['color', 'block'],
-    states: ['loading', 'disabled']
+    states: ['loading', 'disabled'],
   };
 
-  it('should return empty string', function() {
-    assert.equal(cx(), '');
+  it('should return empty string', () => {
+    expect(cx()).toEqual('');
   });
 
-  it('should return block name', function() {
-    assert.equal(cx(classes), 'button');
+  it('should return block name', () => {
+    expect(cx(classes)).toEqual('button');
   });
 
-  it('should return modifiers', function() {
-    assert.equal(cx(classes, { color: 'green' }), 'button button--green');
-    assert.equal(cx(classes, { color: 'green', block: true }), 'button button--green button--block');
-    assert.equal(cx(classes, { color: 'green' }, { block: true }), 'button button--green button--block');
+  it('should return modifiers', () => {
+    expect(cx(classes, { color: 'green' })).toEqual('button button--green');
+    expect(cx(classes, { color: 'green', block: true })).toEqual(
+      'button button--green button--block'
+    );
+    expect(cx(classes, { color: 'green' }, { block: true })).toEqual(
+      'button button--green button--block'
+    );
+    expect(cx(classes, { color: false }, { block: true })).toEqual(
+      'button button--block'
+    );
   });
 
-  it('should return states', function() {
-    assert.equal(cx(classes, { loading: true }), 'button is-loading');
-    assert.equal(cx(classes, { loading: true, disabled: true }), 'button is-loading is-disabled');
-    assert.equal(cx(classes, { loading: true }, { disabled: true }), 'button is-loading is-disabled');
+  it('should return states', () => {
+    expect(cx(classes, { loading: true })).toEqual('button is-loading');
+    expect(cx(classes, { loading: true, disabled: true })).toEqual(
+      'button is-loading is-disabled'
+    );
+    expect(cx(classes, { loading: true }, { disabled: true })).toEqual(
+      'button is-loading is-disabled'
+    );
   });
 
-  it('supports a string of class names', function() {
-    assert.equal(cx({ name: 'button' }, 'a'), 'button a');
-    assert.equal(cx(classes, 'a'), 'button a');
-    assert.equal(cx(classes, 'a', 'b c'), 'button a b c');
+  it('supports a string of class names', () => {
+    expect(cx({ name: 'button' }, 'a')).toEqual('button a');
+    expect(cx(classes, 'a')).toEqual('button a');
+    expect(cx(classes, 'a', 'b c')).toEqual('button a b c');
+    expect(cx(classes, 'a', { b: false })).toEqual('button a');
   });
 
-  it('supports an array of class names', function() {
-    assert.equal(cx(classes, ['a']), 'button a');
-    assert.equal(cx(classes, ['a'], ['b', 'c']), 'button a b c');
+  it('supports an array of class names', () => {
+    expect(cx(classes, ['a'])).toEqual('button a');
+    expect(cx(classes, ['a'], ['b', 'c'])).toEqual('button a b c');
   });
 
-  it('should ignore, except for valid objects', function() {
-    assert.equal(cx(classes, null, undefined, 1, 0, true, false, '', { color: 'green' }, 'a', ['b', 'c']), 'button button--green a b c');
+  it('should ignore, except for valid objects', () => {
+    expect(
+      cx(
+        classes,
+        null,
+        undefined,
+        1,
+        0,
+        true,
+        false,
+        '',
+        { color: 'green' },
+        'a',
+        ['b', 'c']
+      )
+    ).toEqual('button button--green a b c');
   });
 
-  it('should be trimmed', function() {
-    assert.equal(cx(classes, '', ' b  ', [' ']), 'button b');
+  it('should be trimmed', () => {
+    expect(cx(classes, '', ' b  ', [' '])).toEqual('button b');
   });
 
-  it('should dedupe', function() {
-    assert.equal(cx(classes, 'foo', 'bar', 'foo', 'bar'), 'button foo bar');
+  it('should dedupe', () => {
+    expect(cx(classes, 'foo', 'bar', 'foo', 'bar')).toEqual('button foo bar');
   });
 
-  it('should be custom prefixes', function() {
+  it('should be custom prefixes', () => {
     cx.prefixes.modifiers = '-';
-    assert.equal(cx(classes, { color: 'green', block: true }), 'button -green -block');
+    expect(cx(classes, { color: 'green', block: true })).toEqual(
+      'button -green -block'
+    );
   });
 
-  it('should be custom rules', function() {
+  it('should be custom rules', () => {
     cx.prefixes.foo = 'foo-';
     classes.foo = ['a', 'b'];
-    assert.equal(cx(classes, { a: true, b: true }), 'button foo-a foo-b');
+    expect(cx(classes, { a: true, b: true })).toEqual('button foo-a foo-b');
   });
-
 });
