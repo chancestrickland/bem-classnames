@@ -3,7 +3,6 @@
   "version": "0.1.0",
   "description": "A simple utility to manage BEM class names in JavaScript",
   "author": "Chance Strickland <hi@chancedigital.io>",
-  "private": false,
   "license": "MIT",
   "main": "index.js",
   "module": "es/index.js",
@@ -77,5 +76,8 @@
   "jest": {
     "globals": {},
     "testRegex": ".+\\.test\\.js$"
+  },
+  "publishConfig": {
+    "access": "public"
   }
 }
