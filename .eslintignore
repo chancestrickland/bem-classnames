@@ -1,4 +1,4 @@
-es/**/*
-umd/**/*
+/es
+/umd
 /index.js
 /index.test.js
