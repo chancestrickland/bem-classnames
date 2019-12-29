@@ -3,3 +3,4 @@ node_modules
 es/**/*
 umd/**/*
 /index.js
+/index.test.js
