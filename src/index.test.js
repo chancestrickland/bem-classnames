@@ -1,4 +1,4 @@
-const cx = require('./index');
+import cx from './index';
 
 describe('cx', () => {
   let classes = {
