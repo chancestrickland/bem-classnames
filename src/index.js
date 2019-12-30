@@ -3,102 +3,56 @@ let prefixes = {
   states: 'is-',
 };
 
-let push = Array.prototype.push;
-let slice = Array.prototype.slice;
-let toString = Object.prototype.toString;
+let { push } = Array.prototype;
 
 /**
- * toType([]) -> 'array'
- *
- * @param {*} object
- * @return {string}
- */
-function toType(o) {
-  return toString
-    .call(o)
-    .slice(8, -1)
-    .toLowerCase();
-}
-
-/**
- * is.array([]) -> true
- *
- * @param {*} object
- * @return {string}
- */
-let is = {};
-['string', 'boolean', 'array', 'object'].forEach(function(t) {
-  is[t] = function(o) {
-    return toType(o) === t;
-  };
-});
-
-/**
- * uniq(['a', 'b', 'a', 'b']) -> ['a', 'b']
- *
- * @param {Array} array
- * @return {Array}
- */
-function uniq(array) {
-  return array.filter(function(el, i) {
-    return array.indexOf(el) === i;
-  });
-}
-
-/**
- * exclude([null, undefined, 1, 0, true, false, '', 'a', ' b  ']) -> ['a', 'b']
- *
- * @param {Array} array
- * @return {string[]}
- */
-function exclude(array) {
-  let i;
-  let n = [];
-
-  for (i = 0; i < array.length; i++) {
-    let el = array[i];
-    if (is.string(el) && el.trim() !== '') {
-      n.push(el.trim());
-    }
-  }
-
-  return n;
-}
-
-/**
- * split(' a  b  ') -> ['a', 'b']
- *
- * @param {string} className
- * @return {string[]}
- */
-function split(className) {
-  return className.trim().split(/ +/);
-}
-
-/**
- * toClassName(['a', 'b']) -> 'a b'
- *
- * @param {string[]} names
- * @return {string}
- */
-function toClassName(names) {
-  return names.join(' ').trim();
-}
-
-/**
- * detectPrefix('modifiers', { name: 'foo' }) -> 'foo--'
+ * detectPrefix('modifiers', { name: 'foo' }) === 'foo--'
  *
  * @param {string} prefixName
  * @param {Object} classes
  * @return {string}
  */
-function detectPrefix(prefixName, classes) {
-  return (prefixes[prefixName] || '').replace(/\{([\w-]*?)\}/g, function(
-    _,
-    p1
-  ) {
-    return classes[p1] || '';
-  });
+const detectPrefix = (prefixName, classes) =>
+  (prefixes[prefixName] || '').replace(
+    /\{([\w-]*?)\}/g,
+    (_, p1) => classes[p1] || ''
+  );
+
+/**
+ * Filter all duplicate values from an array.
+ *
+ * @param {Array} array
+ * @return {Array}
+ */
+function filterDuplicateValues(array) {
+  let n = [];
+  for (let i = 0; i < array.length; i++) {
+    let el = array[i];
+    if (array.indexOf(el) === i) {
+      n.push(el);
+    }
+  }
+  return n;
+}
+
+/**
+ * Exclude non-empty strings and non-string values from an array.
+ *
+ * @param {Array} array
+ * @return {string[]}
+ */
+function filterNonStringValues(array) {
+  let filtered = [];
+  for (let i = 0; i < array.length; i++) {
+    let el = array[i];
+    if (typeof el === 'string') {
+      let trimmed = el.trim();
+      if (trimmed) {
+        filtered.push(trimmed);
+      }
+    }
+  }
+  return filtered;
 }
 
 /**
@@ -112,32 +66,62 @@ function detectPrefix(prefixName, classes) {
 function getClassNamesByProps(propNames, props, prefix) {
   prefix = prefix || '';
   let i;
-  let n = [];
+  let filtered = [];
 
   for (i = 0; i < propNames.length; i++) {
     let name = propNames[i];
     if (props[name]) {
-      n.push(prefix + (is.boolean(props[name]) ? name : props[name]));
+      filtered.push(
+        prefix + (typeof props[name] === 'boolean' ? name : props[name])
+      );
     }
   }
 
-  return n;
+  return filtered;
 }
+
+/**
+ * split(' a  b  ') -> ['a', 'b']
+ *
+ * @param {string} className
+ * @return {string[]}
+ */
+const split = className => className.trim().split(/ +/);
+
+/**
+ * toClassName(['a', 'b']) -> 'a b'
+ *
+ * @param {string[]} names
+ * @return {string}
+ */
+const toClassName = names => names.join(' ').trim();
+
+/**
+ * toType([]) -> 'array'
+ *
+ * @param {*} object
+ * @return {string}
+ */
+const toType = o =>
+  Object.prototype.toString
+    .call(o) // e.g. [object Array]
+    .slice(8, -1) // e.g. Array
+    .toLowerCase(); // array
 
 /**
  * @param {Object} classes
  * @param {...Object|string} [props|className]
  * @return {string}
  */
-function cx(classes /* , [...props|className] */) {
-  if (!classes) {
-    return '';
-  }
+function cx(classes, ...args) {
+  if (!classes) return '';
 
-  let args = slice.call(arguments).slice(1);
   let classNames = [];
   let names = Object.keys(classes);
-  let i, n;
+
+  // Counter variables for loops
+  let i;
+  let n;
 
   for (i = 0; i < names.length; i++) {
     let name = names[i];
@@ -148,7 +132,7 @@ function cx(classes /* , [...props|className] */) {
       case 'array':
         for (n = 0; n < args.length; n++) {
           let arg = args[n];
-          if (is.object(arg)) {
+          if (toType(arg) === 'object') {
             let newNames = getClassNamesByProps(
               classes[name],
               arg,
@@ -175,7 +159,7 @@ function cx(classes /* , [...props|className] */) {
     }
   }
 
-  return toClassName(exclude(uniq(classNames)));
+  return toClassName(filterNonStringValues(filterDuplicateValues(classNames)));
 }
 
 cx.prefixes = prefixes;

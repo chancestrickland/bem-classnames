@@ -1,5 +1,3 @@
-const BABEL_ENV = process.env.BABEL_ENV;
-const building = BABEL_ENV != null && BABEL_ENV !== 'cjs';
 const plugins = [
   [
     '@babel/plugin-transform-runtime',
@@ -14,7 +12,6 @@ const presets = [
     '@babel/preset-env',
     {
       loose: true,
-      modules: building ? false : 'commonjs',
     },
   ],
 ];

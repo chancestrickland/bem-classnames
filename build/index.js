@@ -1,37 +1,71 @@
-const fs = require('fs');
-const execSync = require('child_process').execSync;
-const prettyBytes = require('pretty-bytes');
-const gzipSize = require('gzip-size');
+let chalk = require('chalk');
+let execSync = require('child_process').execSync;
+let fs = require('fs');
+let gzipSize = require('gzip-size');
+let prettyBytes = require('pretty-bytes');
+let { log } = console;
 
+const DIVIDER = '\n-------------------------------------------';
 const PACKAGE_NAME = 'bem-classnames';
+const FILES = [
+  {
+    moduleType: 'es',
+    file: `es/${PACKAGE_NAME}.js`,
+    env: 'development',
+  },
+  {
+    moduleType: 'es',
+    file: `es/${PACKAGE_NAME}.min.js`,
+    env: 'production',
+  },
+  {
+    moduleType: 'cjs',
+    file: 'index.js',
+    env: 'production',
+  },
+  {
+    moduleType: 'umd',
+    file: `umd/${PACKAGE_NAME}.js`,
+    env: 'development',
+  },
+  {
+    moduleType: 'umd',
+    file: `umd/${PACKAGE_NAME}.min.js`,
+    env: 'production',
+  },
+];
 
-const exec = (command, extraEnv) =>
+function exec(command, extraEnv = {}) {
   execSync(command, {
     stdio: 'inherit',
-    env: Object.assign({}, process.env, extraEnv),
+    env: {
+      ...process.env,
+      ...extraEnv,
+    },
+  });
+}
+
+let t;
+FILES.forEach(({ moduleType, file, env }, i, arr) => {
+  if (t !== moduleType) {
+    log(
+      chalk.white(`\nBuilding ${moduleType.toUpperCase()} modules…${DIVIDER}`)
+    );
+  }
+
+  exec(`rollup -c -f ${moduleType === 'es' ? 'esm' : moduleType} -o ${file}`, {
+    BABEL_ENV: moduleType,
+    NODE_ENV: env,
   });
 
-console.log('\nBuilding ES modules ...');
-exec('babel src -d es --ignore src/**/*.test.js', {
-  BABEL_ENV: 'es',
-});
+  if (env === 'development') {
+    exec(`prettier --write --loglevel silent ${file}`);
+  }
 
-console.log('Building CommonJS modules ...');
-exec('babel src -d . --ignore src/**/*.test.js', {
-  BABEL_ENV: 'cjs',
+  const size = gzipSize.sync(fs.readFileSync(file));
+  log(chalk.green(`size: ${prettyBytes(size)}`));
+  t = moduleType;
+  if (i === arr.length - 1) {
+    log(`${DIVIDER}\n`);
+  }
 });
-
-console.log('\nBuilding UMD ...');
-exec(`rollup -c -f umd -o umd/${PACKAGE_NAME}.js`, {
-  BABEL_ENV: 'umd',
-  NODE_ENV: 'development',
-});
-
-console.log('\nBuilding UMD min.js ...');
-exec(`rollup -c -f umd -o umd/${PACKAGE_NAME}.min.js`, {
-  BABEL_ENV: 'umd',
-  NODE_ENV: 'production',
-});
-
-const size = gzipSize.sync(fs.readFileSync(`umd/${PACKAGE_NAME}.min.js`));
-console.log('\ngzipped, the UMD build is %s', prettyBytes(size));

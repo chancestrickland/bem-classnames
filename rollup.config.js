@@ -1,3 +1,4 @@
+/* eslint-disable camelcase */
 import babel from 'rollup-plugin-babel';
 import commonjs from 'rollup-plugin-commonjs';
 import replace from 'rollup-plugin-replace';
@@ -27,7 +28,15 @@ const config = {
 };
 
 if (process.env.NODE_ENV === 'production') {
-  config.plugins.push(terser());
+  config.plugins.push(
+    terser({
+      mangle: {
+        keep_classnames: true,
+        toplevel: true,
+        safari10: true,
+      },
+    })
+  );
 }
 
 export default config;
