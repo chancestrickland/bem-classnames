@@ -1,6 +1,6 @@
 {
   "name": "@chancestrickland/bem-classnames",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "A simple utility to manage BEM class names in JavaScript",
   "author": "Chance Strickland <hi@chancedigital.io>",
   "license": "MIT",
